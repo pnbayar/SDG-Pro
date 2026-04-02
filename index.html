@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Sustainability Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Smooth transitions for the DAT-like feel */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="w-full p-6 bg-white shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-semibold tracking-wide text-green-700">Sustainability Literacy Task</h1>
+            <div id="progress-text" class="text-sm text-gray-400 font-mono">Question 1 of 40</div>
+        </div>
+    </header>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div id="app-container" class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8 md:p-12 fade-in">
+            
+            <div id="welcome-screen" class="text-center">
+                <h2 class="text-3xl font-bold mb-4 text-gray-900">Discover Your SDG Profile</h2>
+                <p class="text-gray-600 mb-8 leading-relaxed">
+                    This assessment evaluates your Cognitive, Ethical, Transformative, and Engagement orientations toward the Sustainable Development Goals (SDGs). 
+                    There are 40 statements. Please indicate your level of agreement with each.
+                </p>
+                <button onclick="startAssessment()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-full transition-colors duration-200">
+                    Begin Assessment
+                </button>
+            </div>
+
+            <div id="question-screen" class="hidden text-center">
+                <h3 id="question-text" class="text-xl md:text-2xl font-medium mb-10 text-gray-800 min-h-[5rem] flex items-center justify-center">
+                    </h3>
+                
+                <div class="flex flex-col md:flex-row justify-center items-stretch gap-3 mb-8">
+                    <button onclick="recordAnswer(1)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Strongly Disagree</button>
+                    <button onclick="recordAnswer(2)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Disagree</button>
+                    <button onclick="recordAnswer(3)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Neutral</button>
+                    <button onclick="recordAnswer(4)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Agree</button>
+                    <button onclick="recordAnswer(5)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Strongly Agree</button>
+                </div>
+                
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-4 mt-8">
+                    <div id="progress-bar" class="bg-green-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="results-screen" class="hidden">
+                <h2 class="text-3xl font-bold mb-6 text-center text-gray-900">Your Sustainability Profile</h2>
+                <div class="w-full max-w-md mx-auto aspect-square mb-8">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+                <div id="results-summary" class="text-center text-gray-600 text-sm md:text-base leading-relaxed bg-gray-50 p-6 rounded-lg">
+                    </div>
+                <div class="text-center mt-8">
+                    <button onclick="location.reload()" class="text-green-600 hover:text-green-800 font-medium underline">Retake Assessment</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // The Data Structure
+        const questions = [
+            // Cognitive Sustainability Literacy
+            { text: "I am well aware of the Sustainable Development Goals (SDGs).", cat: "Cognitive", reverse: false },
+            { text: "I know the three pillars of sustainability.", cat: "Cognitive", reverse: false },
+            { text: "I am well informed about global environmental agreements.", cat: "Cognitive", reverse: false },
+            { text: "I have an understanding of how climate change affects economic systems.", cat: "Cognitive", reverse: false },
+            { text: "I am aware of the principles underlying the circular economy.", cat: "Cognitive", reverse: false },
+            { text: "I know the effects of declining biodiversity on ecosystem stability.", cat: "Cognitive", reverse: false },
+            { text: "I am aware of how economic growth influences sustainability.", cat: "Cognitive", reverse: false },
+            { text: "Governance structures have no impact on sustainability outcomes.", cat: "Cognitive", reverse: true },
+            { text: "Resource depletion does not affect future generations.", cat: "Cognitive", reverse: true },
+            { text: "I feel Sustainability is purely a scientific concern.", cat: "Cognitive", reverse: true },
+            
+            // Ethical & Value Orientation
+            { text: "I prioritize fairness in sustainability-related decisions.", cat: "Ethical", reverse: false },
+            { text: "I believe future generations have a right to environmental protection.", cat: "Ethical", reverse: false },
+            { text: "I feel accountable for contributing to sustainable practices.", cat: "Ethical", reverse: false },
+            { text: "I consider social justice fundamental to sustainable development.", cat: "Ethical", reverse: false },
+            { text: "I believe ethical principles should guide policy decisions.", cat: "Ethical", reverse: false },
+            { text: "I am concerned about issues of environmental injustice.", cat: "Ethical", reverse: false },
+            { text: "I believe sustainability depends on shared or collective responsibility.", cat: "Ethical", reverse: false },
+            { text: "I view equity as a core element of sustainability.", cat: "Ethical", reverse: false },
+            { text: "Social justice has no relevance to sustainability.", cat: "Ethical", reverse: true },
+            { text: "I feel Sustainability is exaggerated.", cat: "Ethical", reverse: true },
+
+            // Transformative Competencies
+            { text: "I can examine sustainability issues from diverse perspectives.", cat: "Transformative", reverse: false },
+            { text: "I am capable of identifying long-term risks related to sustainability.", cat: "Transformative", reverse: false },
+            { text: "I can think about the advantages and disadvantages of sustainability choices.", cat: "Transformative", reverse: false },
+            { text: "I am capable of developing strategic sustainability solutions.", cat: "Transformative", reverse: false },
+            { text: "I can integrate environmental, social, and economic dimensions.", cat: "Transformative", reverse: false },
+            { text: "I am capable of thinking systematically about sustainability challenges.", cat: "Transformative", reverse: false },
+            { text: "I feel confident suggesting sustainability improvements.", cat: "Transformative", reverse: false },
+            { text: "I can interpret sustainability-related data effectively.", cat: "Transformative", reverse: false },
+            { text: "Planning for long-term sustainability is impractical.", cat: "Transformative", reverse: true },
+            { text: "Evaluating sustainability policies is beyond my capability.", cat: "Transformative", reverse: true },
+
+            // Sustainability Engagement & Action
+            { text: "I consistently practice conserving energy.", cat: "Engagement", reverse: false },
+            { text: "I make efforts to minimize waste in my everyday life.", cat: "Engagement", reverse: false },
+            { text: "I stay informed about news related to sustainability.", cat: "Engagement", reverse: false },
+            { text: "I motivate others to adopt sustainable behaviors.", cat: "Engagement", reverse: false },
+            { text: "I volunteer in initiatives that promote sustainability.", cat: "Engagement", reverse: false },
+            { text: "I opt for eco-friendly products when possible.", cat: "Engagement", reverse: false },
+            { text: "I contribute to my community sustainability initiatives through my actions.", cat: "Engagement", reverse: false },
+            { text: "I am involved in recycling and waste reduction activities.", cat: "Engagement", reverse: false },
+            { text: "Civic participation in sustainability efforts is unnecessary.", cat: "Engagement", reverse: true },
+            { text: "Engagement in sustainability does not produce meaningful change.", cat: "Engagement", reverse: true }
+        ];
+
+        let currentIndex = 0;
+        let scores = { "Cognitive": [], "Ethical": [], "Transformative": [], "Engagement": [] };
+
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const questionText = document.getElementById('question-text');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+
+        function startAssessment() {
+            // Randomize questions for a better testing experience (optional)
+            // questions.sort(() => Math.random() - 0.5); 
+            
+            welcomeScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            document.getElementById('progress-text').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            // Trigger animation
+            questionText.parentElement.classList.remove('fade-in');
+            void questionText.parentElement.offsetWidth; // trigger reflow
+            questionText.parentElement.classList.add('fade-in');
+
+            questionText.innerText = questions[currentIndex].text;
+            progressText.innerText = `Question ${currentIndex + 1} of ${questions.length}`;
+            progressBar.style.width = `${((currentIndex) / questions.length) * 100}%`;
+        }
+
+        function recordAnswer(value) {
+            const currentQ = questions[currentIndex];
+            
+            // Apply Reverse Scoring Logic if necessary
+            let finalValue = currentQ.reverse ? (6 - value) : value;
+            
+            scores[currentQ.cat].push(finalValue);
+            
+            currentIndex++;
+            if (currentIndex < questions.length) {
+                showQuestion();
+            } else {
+                calculateResults();
+            }
+        }
+
+        function calculateResults() {
+            questionScreen.classList.add('hidden');
+            document.getElementById('progress-text').style.display = 'none';
+            resultsScreen.classList.remove('hidden');
+            resultsScreen.classList.add('fade-in');
+
+            // Calculate averages
+            const averages = {
+                Cognitive: scores["Cognitive"].reduce((a, b) => a + b, 0) / scores["Cognitive"].length,
+                Ethical: scores["Ethical"].reduce((a, b) => a + b, 0) / scores["Ethical"].length,
+                Transformative: scores["Transformative"].reduce((a, b) => a + b, 0) / scores["Transformative"].length,
+                Engagement: scores["Engagement"].reduce((a, b) => a + b, 0) / scores["Engagement"].length
+            };
+
+            renderChart(averages);
+            
+            // Basic logic for dynamic summary
+            const highestCat = Object.keys(averages).reduce((a, b) => averages[a] > averages[b] ? a : b);
+            document.getElementById('results-summary').innerHTML = `
+                Your scores are calculated on a scale of 1 to 5. <br>
+                You scored highest in <strong>${highestCat}</strong>. <br>
+                Use this profile to understand where your sustainability strengths lie and where you can expand your knowledge and actions.
+            `;
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('resultsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Cognitive Literacy', 'Ethical Orientation', 'Transformative Competencies', 'Engagement & Action'],
+                    datasets: [{
+                        label: 'Your Score',
+                        data: [data.Cognitive, data.Ethical, data.Transformative, data.Engagement],
+                        backgroundColor: 'rgba(22, 163, 74, 0.2)', // Tailwind green-600 with opacity
+                        borderColor: 'rgba(22, 163, 74, 1)',
+                        pointBackgroundColor: 'rgba(22, 163, 74, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { display: true },
+                            suggestedMin: 1,
+                            suggestedMax: 5,
+                            ticks: { stepSize: 1 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
