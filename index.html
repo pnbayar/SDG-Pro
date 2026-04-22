@@ -10,14 +10,54 @@
         /* Smooth transitions for the DAT-like feel */
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom gradient background for sustainability theme */
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+
+        /* Enhanced button styles */
+        .btn-likert {
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-likert:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* Improved header */
+        header {
+            background: linear-gradient(90deg, #16a34a 0%, #059669 100%);
+            color: white;
+        }
+
+        /* Card shadow and border */
+        #app-container {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Progress bar styling */
+        #progress-bar {
+            background: linear-gradient(90deg, #16a34a 0%, #059669 100%);
+        }
+
+        /* Results chart container */
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="text-gray-800 font-sans antialiased min-h-screen flex flex-col">
 
-    <header class="w-full p-6 bg-white shadow-sm">
+    <header class="w-full p-6 shadow-sm">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-semibold tracking-wide text-green-700">Sustainability Literacy Task</h1>
-            <div id="progress-text" class="text-sm text-gray-400 font-mono">Question 1 of 40</div>
+            <h1 class="text-xl font-semibold tracking-wide text-white">Sustainability Literacy Task</h1>
+            <div id="progress-text" class="text-sm text-white font-mono">Question 1 of 40</div>
         </div>
     </header>
 
@@ -30,9 +70,7 @@
                     This assessment evaluates your Cognitive, Ethical, Transformative, and Engagement orientations toward the Sustainable Development Goals (SDGs). 
                     There are 40 statements. Please indicate your level of agreement with each.
                 </p>
-                <button onclick="startAssessment()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-full transition-colors duration-200">
-                    Begin Assessment
-                </button>
+                <button onclick="startAssessment()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-full transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105">Begin Assessment</button>
             </div>
 
             <div id="question-screen" class="hidden text-center">
@@ -54,13 +92,13 @@
 
             <div id="results-screen" class="hidden">
                 <h2 class="text-3xl font-bold mb-6 text-center text-gray-900">Your Sustainability Profile</h2>
-                <div class="w-full max-w-md mx-auto aspect-square mb-8">
+                <div class="w-full max-w-md mx-auto aspect-square mb-8 chart-container">
                     <canvas id="resultsChart"></canvas>
                 </div>
-                <div id="results-summary" class="text-center text-gray-600 text-sm md:text-base leading-relaxed bg-gray-50 p-6 rounded-lg">
+                <div id="results-summary" class="text-center text-gray-600 text-sm md:text-base leading-relaxed bg-white p-6 rounded-lg shadow-md">
                     </div>
                 <div class="text-center mt-8">
-                    <button onclick="location.reload()" class="text-green-600 hover:text-green-800 font-medium underline">Retake Assessment</button>
+                    <button onclick="location.reload()" class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-8 rounded-full transition-colors duration-200 shadow-md hover:shadow-lg">Retake Assessment</button>
                 </div>
             </div>
 
