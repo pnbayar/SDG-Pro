@@ -226,23 +226,32 @@
                 return;
             }
 
-            // Calculate averages
-            const averages = {
-                Cognitive: scores["Cognitive"].reduce((a, b) => a + b, 0) / scores["Cognitive"].length,
-                Ethical: scores["Ethical"].reduce((a, b) => a + b, 0) / scores["Ethical"].length,
-                Transformative: scores["Transformative"].reduce((a, b) => a + b, 0) / scores["Transformative"].length,
-                Engagement: scores["Engagement"].reduce((a, b) => a + b, 0) / scores["Engagement"].length
+            // Calculate totals for each domain (max 50 points per domain)
+            const totals = {
+                Cognitive: scores["Cognitive"].reduce((a, b) => a + b, 0),
+                Ethical: scores["Ethical"].reduce((a, b) => a + b, 0),
+                Transformative: scores["Transformative"].reduce((a, b) => a + b, 0),
+                Engagement: scores["Engagement"].reduce((a, b) => a + b, 0)
             };
 
+            const totalScore = totals.Cognitive + totals.Ethical + totals.Transformative + totals.Engagement;
+            const percentScore = Math.round((totalScore / 200) * 100);
+            let literacyLabel = 'LSL (Low Sustainable Literacy)';
+            if (percentScore > 25 && percentScore <= 50) literacyLabel = 'ASL (Average Sustainable Literacy)';
+            else if (percentScore > 50 && percentScore <= 75) literacyLabel = 'HSL (High Sustainable Literacy)';
+            else if (percentScore > 75) literacyLabel = 'VHSL (Very High Sustainable Literacy)';
+
             document.getElementById('resultsChart').style.display = 'block';
-            renderChart(averages);
+            renderChart(totals);
             
-            // Basic logic for dynamic summary
-            const highestCat = Object.keys(averages).reduce((a, b) => averages[a] > averages[b] ? a : b);
             document.getElementById('results-summary').innerHTML = `
-                Your scores are calculated on a scale of 1 to 5. <br>
-                You scored highest in <strong>${highestCat}</strong>. <br>
-                Use this profile to understand where your sustainability strengths lie and where you can expand your knowledge and actions.
+                Your domain scores are each weighted to 50 points, for a total possible score of 200. <br>
+                Your overall literacy score is <strong>${percentScore}/100</strong>, which falls into <strong>${literacyLabel}</strong>. <br><br>
+                <strong>Domain breakdown:</strong><br>
+                Cognitive: ${totals.Cognitive}/50<br>
+                Ethical: ${totals.Ethical}/50<br>
+                Transformative: ${totals.Transformative}/50<br>
+                Engagement: ${totals.Engagement}/50
             `;
         }
 
@@ -265,9 +274,9 @@
                     scales: {
                         r: {
                             angleLines: { display: true },
-                            suggestedMin: 1,
-                            suggestedMax: 5,
-                            ticks: { stepSize: 1 }
+                            suggestedMin: 0,
+                            suggestedMax: 50,
+                            ticks: { stepSize: 10 }
                         }
                     },
                     plugins: { legend: { display: false } }
