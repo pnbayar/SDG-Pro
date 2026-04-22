@@ -40,11 +40,11 @@
                     </h3>
                 
                 <div class="flex flex-col md:flex-row justify-center items-stretch gap-3 mb-8">
-                    <button onclick="recordAnswer(1)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Strongly Disagree</button>
-                    <button onclick="recordAnswer(2)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Disagree</button>
-                    <button onclick="recordAnswer(3)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Neutral</button>
-                    <button onclick="recordAnswer(4)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Agree</button>
                     <button onclick="recordAnswer(5)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Strongly Agree</button>
+                    <button onclick="recordAnswer(4)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Agree</button>
+                    <button onclick="recordAnswer(3)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Neutral</button>
+                    <button onclick="recordAnswer(2)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Disagree</button>
+                    <button onclick="recordAnswer(1)" class="btn-likert border border-gray-300 hover:border-green-500 hover:bg-green-50 rounded-lg py-3 px-4 transition-all">Strongly Disagree</button>
                 </div>
                 
                 <div class="w-full bg-gray-200 rounded-full h-1.5 mb-4 mt-8">
@@ -121,6 +121,7 @@
 
         let currentIndex = 0;
         let scores = { "Cognitive": [], "Ethical": [], "Transformative": [], "Engagement": [] };
+        let neutralCount = 0;
 
         const welcomeScreen = document.getElementById('welcome-screen');
         const questionScreen = document.getElementById('question-screen');
@@ -158,6 +159,10 @@
             
             scores[currentQ.cat].push(finalValue);
             
+            if (value === 3) {
+                neutralCount++;
+            }
+            
             currentIndex++;
             if (currentIndex < questions.length) {
                 showQuestion();
@@ -172,6 +177,17 @@
             resultsScreen.classList.remove('hidden');
             resultsScreen.classList.add('fade-in');
 
+            if (neutralCount >= 16) {
+                // Invalid: too many neutral responses
+                document.getElementById('results-summary').innerHTML = `
+                    <div class="text-red-600 font-semibold mb-4">Warning: Invalid Assessment</div>
+                    <p>You have selected "Neutral" for 16 or more questions. This assessment requires more definitive responses to provide accurate results. Please retake the assessment with clearer opinions.</p>
+                `;
+                // Hide the chart
+                document.getElementById('resultsChart').style.display = 'none';
+                return;
+            }
+
             // Calculate averages
             const averages = {
                 Cognitive: scores["Cognitive"].reduce((a, b) => a + b, 0) / scores["Cognitive"].length,
@@ -180,6 +196,7 @@
                 Engagement: scores["Engagement"].reduce((a, b) => a + b, 0) / scores["Engagement"].length
             };
 
+            document.getElementById('resultsChart').style.display = 'block';
             renderChart(averages);
             
             // Basic logic for dynamic summary
